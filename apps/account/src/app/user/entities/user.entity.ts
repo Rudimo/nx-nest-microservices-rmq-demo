@@ -1,4 +1,4 @@
-import { IUser, UserRole } from '@nx-monorepo-project/interfaces';
+import { IUser, IUserItems, UserRole } from '@nx-monorepo-project/interfaces';
 import { compare, genSalt, hash } from 'bcryptjs';
 
 export class UserEntity implements IUser {
@@ -7,6 +7,7 @@ export class UserEntity implements IUser {
   email: string;
   passwordHash: string;
   role: UserRole;
+  items?: IUserItems[];
 
   constructor(user: IUser) {
     this._id = user._id;
@@ -14,6 +15,16 @@ export class UserEntity implements IUser {
     this.displayName = user.displayName;
     this.email = user.email;
     this.role = user.role;
+    this.items = user.items;
+  }
+
+  public getPublicProfile() {
+    return {
+      _id: this._id,
+      displayName: this.displayName,
+      email: this.email,
+      role: this.role,
+    }
   }
 
   public async setPassword(password: string) {
@@ -24,5 +35,10 @@ export class UserEntity implements IUser {
 
   public validatePassword(password: string) {
     return compare(password, this.passwordHash);
+  }
+
+  public updateProfile(displayName: string) {
+    this.displayName = displayName;
+    return this;
   }
 }

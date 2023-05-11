@@ -16,10 +16,21 @@ export class UserRepository {
   }
 
   async findUser(email: string) {
-    return this.userModel.findOne({email}).exec();
+    return this.userModel.findOne({ email }).exec();
+  }
+
+  async findUserById(id: string) {
+    return this.userModel
+      .findById(id)
+      .select(['_id', 'displayName', 'email', 'role', 'items'])
+      .exec();
+  }
+
+  async updateUser({ _id, ...user }: UserEntity) {
+    return this.userModel.updateOne({ _id }, { $set: { ...user } }).exec();
   }
 
   async deleteUser(email: string) {
-    return this.userModel.deleteOne({email}).exec();
+    return this.userModel.deleteOne({ email }).exec();
   }
 }
