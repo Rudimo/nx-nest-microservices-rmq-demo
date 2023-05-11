@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@nx-monorepo-project/contracts": ["libs/contracts/src/index.ts"],
       "@nx-monorepo-project/interfaces": ["libs/interfaces/src/index.ts"]
     }
   },

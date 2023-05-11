@@ -2,7 +2,11 @@
   "name": "nx-monorepo-project",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "api:serve": "nx run api:serve",
+    "account:serve": "nx run account:serve",
+    "run-many:serve": "nx run-many --target=serve --parallel=10"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^9.1.1",
@@ -18,6 +22,7 @@
     "class-validator": "^0.14.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.0",
+    "nestjs-rmq": "^2.8.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
@@ -38,6 +43,7 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/jest": "^29.4.0",
     "@types/node": "~18.7.1",
+    "@types/passport-jwt": "^3.0.8",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "eslint": "~8.15.0",
