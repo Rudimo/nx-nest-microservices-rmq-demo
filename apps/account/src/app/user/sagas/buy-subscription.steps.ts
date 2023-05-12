@@ -1,4 +1,5 @@
 import {
+  PaymentCheck,
   PaymentGenerateLink,
   SubcsriptionGetSubscription,
 } from '@nx-monorepo-project/contracts';
@@ -7,7 +8,6 @@ import { BuySubscriptionState } from './buy-subscription.state';
 import { PurchaseState } from '@nx-monorepo-project/interfaces';
 
 export class BuySubscriptionSagaStateStarted extends BuySubscriptionState {
-    
   public async pay(): Promise<{ paymentLink: string; user: UserEntity }> {
     const { subscription } = await this.saga.rmqService.send<
       SubcsriptionGetSubscription.Request,
@@ -21,8 +21,8 @@ export class BuySubscriptionSagaStateStarted extends BuySubscriptionState {
     }
 
     if (subscription.price === 0) {
-        this.saga.setState(PurchaseState.Purchased, subscription._id);
-        return { paymentLink: null, user: this.saga.user }
+      this.saga.setState(PurchaseState.Purchased, subscription._id);
+      return { paymentLink: null, user: this.saga.user };
     }
 
     const { paymentLink } = await this.saga.rmqService.send<
@@ -31,12 +31,12 @@ export class BuySubscriptionSagaStateStarted extends BuySubscriptionState {
     >(PaymentGenerateLink.topic, {
       subscriptionId: subscription._id,
       userId: this.saga.user._id,
-      sum: subscription.price
+      sum: subscription.price,
     });
 
     this.saga.setState(PurchaseState.WaitingForPayment, subscription._id);
 
-    return { paymentLink, user: this.saga.user }
+    return { paymentLink, user: this.saga.user };
   }
 
   public checkPayment(): Promise<{ user: UserEntity }> {
@@ -45,48 +45,63 @@ export class BuySubscriptionSagaStateStarted extends BuySubscriptionState {
 
   public async cancelPayment(): Promise<{ user: UserEntity }> {
     this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
-    return { user: this.saga.user }
+    return { user: this.saga.user };
   }
 }
 
-// export class BuySubscriptionSagaStateWaitingForPayment extends BuySubscriptionState {
-//   public pay(): Promise<{ paymentLink: string; user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public checkPayment(): Promise<{ user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public async cancelPayment(): Promise<{ user: UserEntity; }> {
-//     this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
-//     return { user: this.saga.user }
-//   }
+export class BuySubscriptionSagaStateWaitingForPayment extends BuySubscriptionState {
+  public pay(): Promise<{ paymentLink: string; user: UserEntity }> {
+    throw new Error('You are already in the process of paying.');
+  }
+  public async checkPayment(): Promise<{ user: UserEntity }> {
+    const { status } = await this.saga.rmqService.send<
+      PaymentCheck.Request,
+      PaymentCheck.Response
+    >(PaymentCheck.topic, {
+      subscriptionId: this.saga.subscriptionId,
+      userId: this.saga.user._id,
+    });
+    if (status === 'canceled') {
+      this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
+      return { user: this.saga.user };
+    }
+    if (status !== 'success') {
+      this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
+      return { user: this.saga.user };
+    }
+    this.saga.setState(PurchaseState.Purchased, this.saga.subscriptionId);
+    return { user: this.saga.user };
+  }
+  public async cancelPayment(): Promise<{ user: UserEntity }> {
+    throw new Error(`You can't cancel a payment that's in progress.`);
+  }
+}
 
-// }
+export class BuySubscriptionSagaStatePurchased extends BuySubscriptionState {
+  public pay(): Promise<{ paymentLink: string; user: UserEntity }> {
+    throw new Error(
+      'You cannot pay for a subscription that has already been paid.'
+    );
+  }
+  public checkPayment(): Promise<{ user: UserEntity }> {
+    throw new Error(
+      'You cannot check the payment of a subscription that has already been purchased.'
+    );
+  }
+  public async cancelPayment(): Promise<{ user: UserEntity }> {
+    throw new Error('You cannot cancel a purchased subscription.');
+  }
+}
 
-// export class BuySubscriptionSagaStatePurchased extends BuySubscriptionState {
-//   public pay(): Promise<{ paymentLink: string; user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public checkPayment(): Promise<{ user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public async cancelPayment(): Promise<{ user: UserEntity; }> {
-//     this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
-//     return { user: this.saga.user }
-//   }
-
-// }
-
-// export class BuySubscriptionSagaStateCanceled extends BuySubscriptionState {
-//   public pay(): Promise<{ paymentLink: string; user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public checkPayment(): Promise<{ user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-//   public cancelPayment(): Promise<{ user: UserEntity; }> {
-//     throw new Error('Method not implemented.');
-//   }
-  
-
-// }
+export class BuySubscriptionSagaStateCanceled extends BuySubscriptionState {
+  public pay(): Promise<{ paymentLink: string; user: UserEntity }> {
+    this.saga.setState(PurchaseState.Started, this.saga.subscriptionId);
+    return this.saga.getState().pay();
+  }
+  public checkPayment(): Promise<{ user: UserEntity }> {
+    throw new Error(`You can't check a payment at a canceled subscription.`);
+  }
+  public async cancelPayment(): Promise<{ user: UserEntity }> {
+    throw new Error('You cannot cancel a canceled subscription.');
+  }
+}

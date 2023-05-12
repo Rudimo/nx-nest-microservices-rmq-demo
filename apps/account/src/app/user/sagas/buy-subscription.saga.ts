@@ -1,39 +1,45 @@
-import { RMQService } from "nestjs-rmq";
-import { UserEntity } from "../entities/user.entity";
-import { PurchaseState } from "@nx-monorepo-project/interfaces";
-import { BuySubscriptionState } from "./buy-subscription.state";
-import { BuySubscriptionSagaStateStarted } from "./buy-subscription.steps";
+import { RMQService } from 'nestjs-rmq';
+import { UserEntity } from '../entities/user.entity';
+import { PurchaseState } from '@nx-monorepo-project/interfaces';
+import { BuySubscriptionState } from './buy-subscription.state';
+import {
+  BuySubscriptionSagaStateCanceled,
+  BuySubscriptionSagaStatePurchased,
+  BuySubscriptionSagaStateStarted,
+  BuySubscriptionSagaStateWaitingForPayment,
+} from './buy-subscription.steps';
 
 export class BuySubscriptionSaga {
+  private state: BuySubscriptionState;
 
-    private state: BuySubscriptionState;
+  constructor(
+    public user: UserEntity,
+    public subscriptionId: string,
+    public rmqService: RMQService
+  ) {}
 
-    constructor(
-        public user: UserEntity,
-        public subscriptionId: string,
-        public rmqService: RMQService
-        ) {
+  setState(state: PurchaseState, subscriptionId: string) {
+    switch (state) {
+      case PurchaseState.Started:
+        this.state = new BuySubscriptionSagaStateStarted();
+        break;
+      case PurchaseState.WaitingForPayment:
+        this.state = new BuySubscriptionSagaStateWaitingForPayment();
+        break;
+      case PurchaseState.Purchased:
+        this.state = new BuySubscriptionSagaStatePurchased();
+        break;
+      case PurchaseState.Canceled:
+        this.state = new BuySubscriptionSagaStateCanceled();
+        break;
     }
 
-    setState(state: PurchaseState, subscriptionId: string) {
-        switch(state) {
-            case PurchaseState.Started:
-                this.state = new BuySubscriptionSagaStateStarted();
-                break;
-            case PurchaseState.WaitingForPayment:
-                break;
-            case PurchaseState.Purchased:
-                break;
-            case PurchaseState.Canceled:
-                break;
-        }
+    this.state.setContext(this);
 
-        this.state.setContext(this);
-        
-        this.user.updateSubscriptionStatus(subscriptionId, state);
-    }
+    this.user.setSubscriptionStatus(subscriptionId, state);
+  }
 
-    getState() {
-        return this.state;
-    }
+  getState() {
+    return this.state;
+  }
 }

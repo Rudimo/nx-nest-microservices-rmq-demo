@@ -1,9 +1,9 @@
 import { IUserSubscription } from "@nx-monorepo-project/interfaces";
 import { IsString } from "class-validator";
 
-export namespace AccountUserSubscription {
+export namespace AccountUserSubscriptions {
 
-    export const topic = 'account.user-subscription.query';
+    export const topic = 'account.user-subscriptions.query';
 
     export class Request {
         @IsString()
@@ -11,7 +11,7 @@ export namespace AccountUserSubscription {
     }
 
     export class Response {
-        subscription: IUserSubscription;
+        subscriptions: IUserSubscription[];
     }
 
 }

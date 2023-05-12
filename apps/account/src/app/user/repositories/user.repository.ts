@@ -22,7 +22,7 @@ export class UserRepository {
   async findUserById(id: string) {
     return this.userModel
       .findById(id)
-      .select(['_id', 'userName', 'email', 'role', 'subscription'])
+      .select(['_id', 'userName', 'email', 'role', 'subscriptions'])
       .exec();
   }
 

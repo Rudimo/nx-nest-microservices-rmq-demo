@@ -1,5 +1,5 @@
 import { Body, Controller } from '@nestjs/common';
-import { AccountUserSubscription, AccountUserProfile } from '@nx-monorepo-project/contracts';
+import { AccountUserSubscriptions, AccountUserProfile } from '@nx-monorepo-project/contracts';
 import { RMQValidate, RMQRoute } from 'nestjs-rmq';
 import { UserRepository } from './repositories/user.repository';
 import { UserEntity } from './entities/user.entity';
@@ -19,13 +19,13 @@ export class UserQueries {
     }
   
     @RMQValidate()
-    @RMQRoute(AccountUserSubscription.topic)
-    async userSubscription(
-      @Body() { id }: AccountUserSubscription.Request
-    ): Promise<AccountUserSubscription.Response> {
+    @RMQRoute(AccountUserSubscriptions.topic)
+    async userSubscriptions(
+      @Body() { id }: AccountUserSubscriptions.Request
+    ): Promise<AccountUserSubscriptions.Response> {
       const user = await this.userRepository.findUserById(id);
         return {
-          subscription: user.subscription
+          subscriptions: user.subscriptions
         }
     }
 

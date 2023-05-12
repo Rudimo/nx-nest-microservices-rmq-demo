@@ -16,7 +16,7 @@ export interface IUser {
     email: string;
     passwordHash: string;
     role: UserRole;
-    subscription?: IUserSubscription;
+    subscriptions?: IUserSubscription[];
 }
 
 export interface IUserSubscription {

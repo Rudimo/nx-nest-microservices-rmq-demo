@@ -7,7 +7,7 @@ export class UserEntity implements IUser {
   email: string;
   passwordHash: string;
   role: UserRole;
-  subscription?: IUserSubscription;
+  subscriptions?: IUserSubscription[];
 
   constructor(user: IUser) {
     this._id = user._id;
@@ -15,7 +15,7 @@ export class UserEntity implements IUser {
     this.userName = user.userName;
     this.email = user.email;
     this.role = user.role;
-    this.subscription = user.subscription;
+    this.subscriptions = user.subscriptions;
   }
 
   public getPublicProfile() {
@@ -43,26 +43,25 @@ export class UserEntity implements IUser {
     return this;
   }
 
-  public addSubscription(subscriptionId: string) {
-    if (this.subscription) {
-      throw new Error('You have an active subscription');
+  public setSubscriptionStatus(subscriptionId: string, state: PurchaseState) {
+    const exist = this.subscriptions.find(subscription => subscription._id === subscriptionId)
+    if (!exist) {
+      this.subscriptions.push({
+        subscriptionId,
+        purchaseState: state
+      })
+      return this;
     }
-
-    this.subscription = {
-      subscriptionId,
-      purchaseState: PurchaseState.Started
-    };
-  }
-
-  public deleteSubscription(subscriptionId: string) {
-    if (this.subscription._id === subscriptionId) {
-      this.subscription = null;
+    if (state === PurchaseState.Canceled) {
+      this.subscriptions = this.subscriptions.filter(subscription => subscription._id !== subscriptionId);
+      return this;
     }
-  }
-
-  public updateSubscriptionStatus(subscriptionId: string, state: PurchaseState) {
-    if (this.subscription._id === subscriptionId) {
-      this.subscription.purchaseState = state;
-    }
+    this.subscriptions = this.subscriptions.map(subscription => {
+      if (subscription._id === subscriptionId) {
+        subscription.purchaseState = state;
+        return subscription;
+      }
+      return subscription;
+    })
   }
 }

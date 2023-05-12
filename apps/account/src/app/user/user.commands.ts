@@ -26,29 +26,29 @@ export class UserCommands {
       return { };
     }
 
-    @RMQValidate()
-    @RMQRoute(AccountBuySubscription.topic)
-    async buySubscription(
-      @Body() { userId, subscriptionId }: AccountBuySubscription.Request
-    ): Promise<AccountBuySubscription.Response> {
-      const existedUser = await this.userRepository.findUserById(userId);
-      if (!existedUser) {
-        throw new Error('User does not exist');
-      }
-      const userEntity = new UserEntity(existedUser);
-      const saga = new BuySubscriptionSaga(userEntity, subscriptionId, this.rmqService);
-      const { user, paymentLink } = await saga.getState().pay();
+    // @RMQValidate()
+    // @RMQRoute(AccountBuySubscription.topic)
+    // async buySubscription(
+    //   @Body() { userId, subscriptionId }: AccountBuySubscription.Request
+    // ): Promise<AccountBuySubscription.Response> {
+    //   const existedUser = await this.userRepository.findUserById(userId);
+    //   if (!existedUser) {
+    //     throw new Error('User does not exist');
+    //   }
+    //   const userEntity = new UserEntity(existedUser);
+    //   const saga = new BuySubscriptionSaga(userEntity, subscriptionId, this.rmqService);
+    //   const { user, paymentLink } = await saga.getState().pay();
 
-      await this.userRepository.updateUser(user);
+    //   await this.userRepository.updateUser(user);
 
-      return { paymentLink };
-    }
+    //   return { paymentLink };
+    // }
 
-    @RMQValidate()
-    @RMQRoute(AccountCheckPayment.topic)
-    async checkPayment(
-      @Body() { userId, subscriptionId }: AccountCheckPayment.Request
-    ): Promise<AccountCheckPayment.Response> {
+    // @RMQValidate()
+    // @RMQRoute(AccountCheckPayment.topic)
+    // async checkPayment(
+    //   @Body() { userId, subscriptionId }: AccountCheckPayment.Request
+    // ): Promise<AccountCheckPayment.Response> {
       
-    }
+    // }
 }

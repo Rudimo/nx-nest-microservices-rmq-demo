@@ -37,8 +37,8 @@ export class User extends Document implements IUser {
   })
   role: UserRole;
 
-  @Prop({ type: UserSubscriptionSchema, _id: false })
-  subscription: UserSubscription;
+  @Prop({ type: [UserSubscriptionSchema], _id: false })
+  subscriptions: Types.Array<UserSubscription>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
