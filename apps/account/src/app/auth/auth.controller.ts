@@ -1,4 +1,4 @@
-import { Body, Controller } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AccountLogin, AccountRegister } from '@nx-monorepo-project/contracts';
 import { RMQRoute, RMQValidate } from 'nestjs-rmq';
@@ -10,16 +10,17 @@ export class AuthController {
   @RMQValidate()
   @RMQRoute(AccountRegister.topic)
   async register(
-    @Body() dto: AccountRegister.Request
+    dto: AccountRegister.Request
   ): Promise<AccountRegister.Response> {
     return this.authService.register(dto);
   }
 
   @RMQValidate()
-  @RMQRoute(AccountLogin.topic) 
-  async login(
-    @Body() { email, password }: AccountLogin.Request
-  ): Promise<AccountLogin.Response> {
+  @RMQRoute(AccountLogin.topic)
+  async login({
+    email,
+    password,
+  }: AccountLogin.Request): Promise<AccountLogin.Response> {
     const { id } = await this.authService.validateUser(email, password);
     return this.authService.login(id);
   }
