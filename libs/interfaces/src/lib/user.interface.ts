@@ -12,15 +12,15 @@ export enum PurchaseState {
 
 export interface IUser {
     _id?: string;
-    displayName?: string;
+    userName?: string;
     email: string;
     passwordHash: string;
     role: UserRole;
-    items?: IUserItems[];
+    subscription?: IUserSubscription;
 }
 
-export interface IUserItems {
+export interface IUserSubscription {
     _id?: string;
-    itemId: string;
+    subscriptionId: string;
     purchaseState: PurchaseState;
 }

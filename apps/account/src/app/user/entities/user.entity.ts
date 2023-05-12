@@ -1,27 +1,27 @@
-import { IUser, IUserItems, UserRole } from '@nx-monorepo-project/interfaces';
+import { IUser, IUserSubscription, PurchaseState, UserRole } from '@nx-monorepo-project/interfaces';
 import { compare, genSalt, hash } from 'bcryptjs';
 
 export class UserEntity implements IUser {
   _id?: string;
-  displayName?: string;
+  userName?: string;
   email: string;
   passwordHash: string;
   role: UserRole;
-  items?: IUserItems[];
+  subscription?: IUserSubscription;
 
   constructor(user: IUser) {
     this._id = user._id;
     this.passwordHash = user.passwordHash;
-    this.displayName = user.displayName;
+    this.userName = user.userName;
     this.email = user.email;
     this.role = user.role;
-    this.items = user.items;
+    this.subscription = user.subscription;
   }
 
   public getPublicProfile() {
     return {
       _id: this._id,
-      displayName: this.displayName,
+      userName: this.userName,
       email: this.email,
       role: this.role,
     }
@@ -37,8 +37,32 @@ export class UserEntity implements IUser {
     return compare(password, this.passwordHash);
   }
 
-  public updateProfile(displayName: string) {
-    this.displayName = displayName;
+  
+  public updateProfile(userName: string) {
+    this.userName = userName;
     return this;
+  }
+
+  public addSubscription(subscriptionId: string) {
+    if (this.subscription) {
+      throw new Error('You have an active subscription');
+    }
+
+    this.subscription = {
+      subscriptionId,
+      purchaseState: PurchaseState.Started
+    };
+  }
+
+  public deleteSubscription(subscriptionId: string) {
+    if (this.subscription._id === subscriptionId) {
+      this.subscription = null;
+    }
+  }
+
+  public updateSubscriptionStatus(subscriptionId: string, state: PurchaseState) {
+    if (this.subscription._id === subscriptionId) {
+      this.subscription.purchaseState = state;
+    }
   }
 }

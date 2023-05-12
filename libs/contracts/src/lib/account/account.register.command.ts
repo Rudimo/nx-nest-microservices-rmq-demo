@@ -13,7 +13,7 @@ export namespace AccountRegister {
 
         @IsOptional()
         @IsString()
-        displayName?: string;
+        userName?: string;
     }
 
     export class Response {

@@ -9,5 +9,5 @@ export class RegisterDto {
 
     @IsOptional()
     @IsString()
-    displayName: string
+    userName: string
 }

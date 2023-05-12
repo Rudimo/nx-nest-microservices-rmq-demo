@@ -1,27 +1,27 @@
 import { Document, Types } from 'mongoose';
 import {
   IUser,
-  IUserItems,
+  IUserSubscription,
   PurchaseState,
   UserRole,
 } from '@nx-monorepo-project/interfaces';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
-export class UserItems extends Document implements IUserItems {
+export class UserSubscription extends Document implements IUserSubscription {
   @Prop({ required: true })
-  itemId: string;
+  subscriptionId: string;
 
   @Prop({ required: true, enum: PurchaseState, type: String })
   purchaseState: PurchaseState;
 }
 
-export const UserItemsSchema = SchemaFactory.createForClass(UserItems);
+export const UserSubscriptionSchema = SchemaFactory.createForClass(UserSubscription);
 
 @Schema()
 export class User extends Document implements IUser {
   @Prop()
-  displayName?: string;
+  userName?: string;
 
   @Prop({ required: true })
   email: string;
@@ -37,8 +37,8 @@ export class User extends Document implements IUser {
   })
   role: UserRole;
 
-  @Prop({ type: [UserItemsSchema], _id: false })
-  items: Types.Array<UserItems>;
+  @Prop({ type: UserSubscriptionSchema, _id: false })
+  subscription: UserSubscription;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
