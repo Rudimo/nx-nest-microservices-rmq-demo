@@ -1,0 +1,65 @@
+import { Injectable } from '@nestjs/common';
+import { AccountChangeProfile } from '@nx-monorepo-project/contracts';
+import { IUser } from '@nx-monorepo-project/interfaces';
+import { RMQService } from 'nestjs-rmq';
+import { UserEntity } from './entities/user.entity';
+import { UserRepository } from './repositories/user.repository';
+import { BuySubscriptionSaga } from './sagas/buy-subscription.saga';
+import { UserEventEmitter } from './user.event-emmiter';
+
+@Injectable()
+export class UserService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly rmqService: RMQService,
+    private readonly userEventEmitter: UserEventEmitter,
+  ) {}
+
+  public async changeProfile(
+    user: Pick<IUser, 'userName'>,
+    id: string
+  ): Promise<AccountChangeProfile.Response> {
+    const existedUser = await this.userRepository.findUserById(id);
+    if (!existedUser) {
+      throw new Error('User does not exist');
+    }
+    const userEntity = new UserEntity(existedUser).updateProfile(user.userName);
+    await this.updateUser(userEntity);
+    return {};
+  }
+
+  public async buySubscription(userId: string, subscriptionId: string) {
+    const existedUser = await this.userRepository.findUserById(userId);
+      if (!existedUser) {
+        throw new Error('User does not exist');
+      }
+      const userEntity = new UserEntity(existedUser);
+      const saga = new BuySubscriptionSaga(userEntity, subscriptionId, this.rmqService);
+      const { user, paymentLink } = await saga.getState().pay();
+
+      await this.updateUser(user);
+
+      return { paymentLink };
+  }
+
+  public async checkPayments(userId: string, subscriptionId: string) {
+    const existedUser = await this.userRepository.findUserById(userId);
+      if (!existedUser) {
+        throw new Error('User does not exist');
+      }
+      const userEntity = new UserEntity(existedUser);
+      const saga = new BuySubscriptionSaga(userEntity, subscriptionId, this.rmqService);
+      const { user, status } = await saga.getState().checkPayment();
+
+      await this.updateUser(user);
+
+      return { status };
+  }
+
+  private async updateUser(user: UserEntity) {
+    return Promise.all([
+        this.userRepository.updateUser(user),
+        this.userEventEmitter.handle(user)
+    ])
+  } 
+}

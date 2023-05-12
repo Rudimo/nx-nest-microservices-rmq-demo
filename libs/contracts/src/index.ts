@@ -9,6 +9,8 @@ export * from './lib/account/account.check-payment.command'
 // - queries
 export * from './lib/account/account.user-profile.query'
 export * from './lib/account/account.user-subscriptions.query'
+// - events
+export * from './lib/account/account.changed-subscrition.event'
 
 // Payment 
 // - commands

@@ -1,4 +1,11 @@
-import { IUser, IUserSubscription, PurchaseState, UserRole } from '@nx-monorepo-project/interfaces';
+import { AccountChangeSubscription } from '@nx-monorepo-project/contracts';
+import {
+  IDomainEvent,
+  IUser,
+  IUserSubscription,
+  PurchaseState,
+  UserRole,
+} from '@nx-monorepo-project/interfaces';
 import { compare, genSalt, hash } from 'bcryptjs';
 
 export class UserEntity implements IUser {
@@ -8,6 +15,7 @@ export class UserEntity implements IUser {
   passwordHash: string;
   role: UserRole;
   subscriptions?: IUserSubscription[];
+  events: IDomainEvent[] = [];
 
   constructor(user: IUser) {
     this._id = user._id;
@@ -24,7 +32,7 @@ export class UserEntity implements IUser {
       userName: this.userName,
       email: this.email,
       role: this.role,
-    }
+    };
   }
 
   public async setPassword(password: string) {
@@ -37,31 +45,43 @@ export class UserEntity implements IUser {
     return compare(password, this.passwordHash);
   }
 
-  
   public updateProfile(userName: string) {
     this.userName = userName;
     return this;
   }
 
   public setSubscriptionStatus(subscriptionId: string, state: PurchaseState) {
-    const exist = this.subscriptions.find(subscription => subscription._id === subscriptionId)
+    const exist = this.subscriptions.find(
+      (subscription) => subscription._id === subscriptionId
+    );
     if (!exist) {
       this.subscriptions.push({
         subscriptionId,
-        purchaseState: state
-      })
+        purchaseState: state,
+      });
       return this;
     }
+
     if (state === PurchaseState.Canceled) {
-      this.subscriptions = this.subscriptions.filter(subscription => subscription._id !== subscriptionId);
+      this.subscriptions = this.subscriptions.filter(
+        (subscription) => subscription._id !== subscriptionId
+      );
       return this;
     }
-    this.subscriptions = this.subscriptions.map(subscription => {
+
+    this.subscriptions = this.subscriptions.map((subscription) => {
       if (subscription._id === subscriptionId) {
         subscription.purchaseState = state;
         return subscription;
       }
       return subscription;
-    })
+    });
+
+    this.events.push({
+      topic: AccountChangeSubscription.topic,
+      data: { subscriptionId, userId: this._id, state },
+    });
+    
+    return this;
   }
 }

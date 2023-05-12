@@ -1,30 +1,20 @@
 import { Body, Controller } from '@nestjs/common';
 import { AccountBuySubscription, AccountChangeProfile, AccountCheckPayment } from '@nx-monorepo-project/contracts';
-import { RMQValidate, RMQRoute, RMQService } from 'nestjs-rmq';
-import { UserRepository } from './repositories/user.repository';
-import { UserEntity } from './entities/user.entity';
-import { BuySubscriptionSaga } from './sagas/buy-subscription.saga';
+import { RMQValidate, RMQRoute } from 'nestjs-rmq';
+import { UserService } from './user.service';
 
 @Controller()
 export class UserCommands {
 
-    constructor(
-      private readonly userRepository: UserRepository,
-      private readonly rmqService: RMQService
-      ) {}
+    constructor(private readonly userService: UserService) {
+    }
 
     @RMQValidate()
     @RMQRoute(AccountChangeProfile.topic)
     async userProfile(
       @Body() { user, id }: AccountChangeProfile.Request
     ): Promise<AccountChangeProfile.Response> {
-      const existedUser = await this.userRepository.findUserById(id);
-      if (!existedUser) {
-        throw new Error('User does not exist')
-      }
-      const userEntity = new UserEntity(existedUser).updateProfile(user.userName);
-      await this.userRepository.updateUser(userEntity)
-      return { };
+      return this.userService.changeProfile(user, id);
     }
 
     @RMQValidate()
@@ -32,17 +22,7 @@ export class UserCommands {
     async buySubscription(
       @Body() { userId, subscriptionId }: AccountBuySubscription.Request
     ): Promise<AccountBuySubscription.Response> {
-      const existedUser = await this.userRepository.findUserById(userId);
-      if (!existedUser) {
-        throw new Error('User does not exist');
-      }
-      const userEntity = new UserEntity(existedUser);
-      const saga = new BuySubscriptionSaga(userEntity, subscriptionId, this.rmqService);
-      const { user, paymentLink } = await saga.getState().pay();
-
-      await this.userRepository.updateUser(user);
-
-      return { paymentLink };
+      return this.userService.buySubscription(userId, subscriptionId);
     }
 
     @RMQValidate()
@@ -50,16 +30,6 @@ export class UserCommands {
     async checkPayment(
       @Body() { userId, subscriptionId }: AccountCheckPayment.Request
     ): Promise<AccountCheckPayment.Response> {
-      const existedUser = await this.userRepository.findUserById(userId);
-      if (!existedUser) {
-        throw new Error('User does not exist');
-      }
-      const userEntity = new UserEntity(existedUser);
-      const saga = new BuySubscriptionSaga(userEntity, subscriptionId, this.rmqService);
-      const { user, status } = await saga.getState().checkPayment();
-
-      await this.userRepository.updateUser(user);
-
-      return { status };
+      return this.userService.checkPayments(userId, subscriptionId);
     }
 }
