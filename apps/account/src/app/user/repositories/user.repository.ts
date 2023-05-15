@@ -15,19 +15,29 @@ export class UserRepository {
     return newUser.save();
   }
 
-  async findUser(email: string) {
-    return this.userModel.findOne({ email }).exec();
-  }
-
   async findUserById(id: string) {
     return this.userModel
       .findById(id)
-      .select(['_id', 'userName', 'email', 'role', 'subscriptions'])
+      .select([
+        '_id',
+        'userName',
+        'firstName',
+        'lastName',
+        'email',
+        'role',
+        'subscriptions',
+      ])
       .exec();
   }
 
+  async findByEmail(email: string) {
+    return this.userModel.findOne({ email }).exec();
+  }
+
   async updateUser({ _id, ...user }: UserEntity) {
-    return this.userModel.updateOne({ _id }, { $set: { ...user } }).exec();
+    return this.userModel
+      .findByIdAndUpdate(_id, { $set: { ...user } }, { new: true })
+      .exec();
   }
 
   async deleteUser(email: string) {

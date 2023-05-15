@@ -1,5 +1,5 @@
 import { IUser } from '@nx-monorepo-project/interfaces';
-import { IsString } from 'class-validator';
+import { IsObject, IsString } from 'class-validator';
 
 export namespace AccountChangeProfile {
   export const topic = 'account.change-profile.command';
@@ -8,8 +8,8 @@ export namespace AccountChangeProfile {
     @IsString()
     id: string;
 
-    @IsString()
-    user: Pick<IUser, 'userName'>;
+    @IsObject()
+    user: Pick<IUser, 'userName' | 'firstName' | 'lastName'>;
   }
 
   export class Response {

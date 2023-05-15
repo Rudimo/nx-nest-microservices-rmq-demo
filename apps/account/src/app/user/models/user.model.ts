@@ -16,15 +16,22 @@ export class UserSubscription extends Document implements IUserSubscription {
   purchaseState: PurchaseState;
 }
 
-export const UserSubscriptionSchema = SchemaFactory.createForClass(UserSubscription);
+export const UserSubscriptionSchema =
+  SchemaFactory.createForClass(UserSubscription);
 
 @Schema()
 export class User extends Document implements IUser {
+  @Prop({ required: true })
+  email: string;
+
   @Prop()
   userName?: string;
 
-  @Prop({ required: true })
-  email: string;
+  @Prop()
+  firstName?: string;
+
+  @Prop()
+  lastName?: string;
 
   @Prop({ required: true })
   passwordHash: string;

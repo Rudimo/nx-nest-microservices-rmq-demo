@@ -6,11 +6,12 @@ import {
   PurchaseState,
   UserRole,
 } from '@nx-monorepo-project/interfaces';
-import { compare, genSalt, hash } from 'bcryptjs';
 
 export class UserEntity implements IUser {
   _id?: string;
   userName?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   passwordHash: string;
   role: UserRole;
@@ -21,6 +22,8 @@ export class UserEntity implements IUser {
     this._id = user._id;
     this.passwordHash = user.passwordHash;
     this.userName = user.userName;
+    this.firstName = user.userName;
+    this.lastName = user.userName;
     this.email = user.email;
     this.role = user.role;
     this.subscriptions = user.subscriptions;
@@ -30,23 +33,19 @@ export class UserEntity implements IUser {
     return {
       _id: this._id,
       userName: this.userName,
+      firstName: this.firstName,
+      lastName: this.lastName,
       email: this.email,
       role: this.role,
     };
   }
 
-  public async setPassword(password: string) {
-    const salt = await genSalt(10);
-    this.passwordHash = await hash(password, salt);
-    return this;
-  }
-
-  public validatePassword(password: string) {
-    return compare(password, this.passwordHash);
-  }
-
-  public updateProfile(userName: string) {
-    this.userName = userName;
+  public updateProfile(
+    user: Pick<IUser, 'userName' | 'firstName' | 'lastName'>
+  ) {
+    this.userName = user.userName;
+    this.firstName = user.firstName;
+    this.lastName = user.lastName;
     return this;
   }
 
@@ -81,7 +80,7 @@ export class UserEntity implements IUser {
       topic: AccountChangeSubscription.topic,
       data: { subscriptionId, userId: this._id, state },
     });
-    
+
     return this;
   }
 }

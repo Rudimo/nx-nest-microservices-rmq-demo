@@ -1,8 +1,8 @@
 import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { AccountLogin, AccountRegister } from '@nx-monorepo-project/contracts';
 import { RMQService } from 'nestjs-rmq';
-import { LoginDto } from '../dtos/login.dto';
-import { RegisterDto } from '../dtos/register.dto';
+import { LoginDto } from './dtos/login.dto';
+import { RegisterDto } from './dtos/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -11,7 +11,10 @@ export class AuthController {
   @Post('registration')
   async register(@Body() dto: RegisterDto) {
     try {
-      return await this.rmqService.send<AccountRegister.Request, AccountRegister.Response>(AccountRegister.topic, dto);
+      return await this.rmqService.send<
+        AccountRegister.Request,
+        AccountRegister.Response
+      >(AccountRegister.topic, dto);
     } catch (e) {
       if (e instanceof Error) {
         throw new UnauthorizedException(e.message);
@@ -22,7 +25,10 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto) {
     try {
-      return await this.rmqService.send<AccountLogin.Request, AccountLogin.Response>(AccountLogin.topic, dto);
+      return await this.rmqService.send<
+        AccountLogin.Request,
+        AccountLogin.Response
+      >(AccountLogin.topic, dto);
     } catch (e) {
       if (e instanceof Error) {
         throw new UnauthorizedException(e.message);

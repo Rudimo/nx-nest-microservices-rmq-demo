@@ -1,26 +1,28 @@
 export enum UserRole {
-    Admin = 'Admin',
-    User = 'User'
+  Admin = 'Admin',
+  User = 'User',
 }
 
 export enum PurchaseState {
-    Started = 'Started',
-    WaitingForPayment = 'WaitingForPayment',
-    Purchased = 'Purchased',
-    Canceled = 'Canceled',
+  Started = 'Started',
+  WaitingForPayment = 'WaitingForPayment',
+  Purchased = 'Purchased',
+  Canceled = 'Canceled',
 }
 
 export interface IUser {
-    _id?: string;
-    userName?: string;
-    email: string;
-    passwordHash: string;
-    role: UserRole;
-    subscriptions?: IUserSubscription[];
+  _id?: string;
+  email: string;
+  userName?: string;
+  firstName?: string;
+  lastName?: string;
+  passwordHash: string;
+  role: UserRole;
+  subscriptions?: IUserSubscription[];
 }
 
 export interface IUserSubscription {
-    _id?: string;
-    subscriptionId: string;
-    purchaseState: PurchaseState;
+  _id?: string;
+  subscriptionId: string;
+  purchaseState: PurchaseState;
 }
