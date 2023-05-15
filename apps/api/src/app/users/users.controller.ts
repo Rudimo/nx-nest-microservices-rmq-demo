@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { JWTAuthGuard } from '../auth/guards/jwt.guard';
 import { UserId } from '../auth/decorators/user.decorator';
 import { ChangeProfileDto } from './dtos/change-profile.dto';
@@ -10,7 +10,13 @@ export class UsersController {
 
   @UseGuards(JWTAuthGuard)
   @Patch('profile')
-  async profile(@Body() dto: ChangeProfileDto, @UserId() userId: string) {
-    return this.usersService.getProfile(dto, userId);
+  async changeProfile(@Body() dto: ChangeProfileDto, @UserId() userId: string) {
+    return this.usersService.changeProfile(dto, userId);
+  }
+
+  @UseGuards(JWTAuthGuard)
+  @Get('profile')
+  async profile(@UserId() userId: string) {
+    return this.usersService.getProfile(userId);
   }
 }

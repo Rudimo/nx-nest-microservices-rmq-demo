@@ -15,19 +15,8 @@ export class UserRepository {
     return newUser.save();
   }
 
-  async findUserById(id: string) {
-    return this.userModel
-      .findById(id)
-      .select([
-        '_id',
-        'userName',
-        'firstName',
-        'lastName',
-        'email',
-        'role',
-        'subscriptions',
-      ])
-      .exec();
+  async findById(id: string) {
+    return this.userModel.findById(id).exec();
   }
 
   async findByEmail(email: string) {

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { AccountChangeProfile } from '@nx-monorepo-project/contracts';
+import {
+  AccountChangeProfile
+} from '@nx-monorepo-project/contracts';
 import { IUser } from '@nx-monorepo-project/interfaces';
 import { RMQService } from 'nestjs-rmq';
 import { UserEntity } from './entities/user.entity';
@@ -15,6 +17,12 @@ export class UserService {
     private readonly userEventEmitter: UserEventEmitter
   ) {}
 
+  public async findById(id: string) {
+    const user = await this.userRepository.findById(id);
+    const profile = new UserEntity(user).getPublicProfile();
+    return { profile };
+  }
+
   public async findByEmail(email: string) {
     return await this.userRepository.findByEmail(email);
   }
@@ -27,7 +35,7 @@ export class UserService {
     user: Pick<IUser, 'userName' | 'firstName' | 'lastName'>,
     id: string
   ): Promise<AccountChangeProfile.Response> {
-    const existedUser = await this.userRepository.findUserById(id);
+    const existedUser = await this.userRepository.findById(id);
     if (!existedUser) {
       throw new Error('User does not exist');
     }
@@ -37,7 +45,7 @@ export class UserService {
   }
 
   public async buySubscription(userId: string, subscriptionId: string) {
-    const existedUser = await this.userRepository.findUserById(userId);
+    const existedUser = await this.userRepository.findById(userId);
     if (!existedUser) {
       throw new Error('User does not exist');
     }
@@ -55,7 +63,7 @@ export class UserService {
   }
 
   public async checkPayments(userId: string, subscriptionId: string) {
-    const existedUser = await this.userRepository.findUserById(userId);
+    const existedUser = await this.userRepository.findById(userId);
     if (!existedUser) {
       throw new Error('User does not exist');
     }
