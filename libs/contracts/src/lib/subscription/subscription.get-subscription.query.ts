@@ -1,18 +1,15 @@
-import { ISubscription } from "@nx-monorepo-project/interfaces";
-import { IsString } from "class-validator";
+import { ISubscription } from '@nx-monorepo-project/interfaces';
+import { IsString } from 'class-validator';
 
-export namespace SubcsriptionGetSubscription {
+export namespace SubscriptionGetSubscription {
+  export const topic = 'subscription.get-subscription.query';
 
-    export const topic = 'subscription.get-subscription.query';
+  export class Request {
+    @IsString()
+    id: string;
+  }
 
-    export class Request {
-        @IsString()
-        id: string;
-    }
-
-    export class Response {
-        subscription: ISubscription | null;
-    }
-
+  export class Response {
+    subscription: ISubscription | null;
+  }
 }
-

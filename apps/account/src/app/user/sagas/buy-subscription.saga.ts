@@ -16,9 +16,11 @@ export class BuySubscriptionSaga {
     public user: UserEntity,
     public subscriptionId: string,
     public rmqService: RMQService
-  ) {}
+  ) {
+    this.setState(user.getSubscriptionState(subscriptionId), subscriptionId);
+  }
 
-  setState(state: PurchaseState, subscriptionId: string) {
+  setState(state: PurchaseState, subscriptionId?: string) {
     switch (state) {
       case PurchaseState.Started:
         this.state = new BuySubscriptionSagaStateStarted();

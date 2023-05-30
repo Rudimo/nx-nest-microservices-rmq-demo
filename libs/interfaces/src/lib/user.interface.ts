@@ -22,7 +22,6 @@ export interface IUser {
 }
 
 export interface IUserSubscription {
-  _id?: string;
   subscriptionId: string;
   purchaseState: PurchaseState;
 }
