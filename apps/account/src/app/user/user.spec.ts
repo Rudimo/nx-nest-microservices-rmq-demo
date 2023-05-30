@@ -8,9 +8,11 @@ import { INestApplication } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import {
   AccountBuySubscription,
+  AccountCheckPayment,
   AccountLogin,
   AccountRegister,
   AccountUserProfile,
+  PaymentCheck,
   PaymentGenerateLink,
   SubscriptionGetSubscription,
 } from '@nx-monorepo-project/contracts';
@@ -114,6 +116,19 @@ describe('User', () => {
         AccountBuySubscription.Response
       >(AccountBuySubscription.topic, { userId, subscriptionId })
     ).rejects.toThrowError();
+  });
+
+  it('CheckPayment', async () => {
+    rmqService.mockReply<PaymentCheck.Response>(PaymentCheck.topic, {
+      status: 'success',
+    });
+
+    const res = await rmqService.triggerRoute<
+      AccountCheckPayment.Request,
+      AccountCheckPayment.Response
+    >(AccountCheckPayment.topic, { userId, subscriptionId });
+
+    expect(res.status).toEqual('success');
   });
 
   afterAll(async () => {

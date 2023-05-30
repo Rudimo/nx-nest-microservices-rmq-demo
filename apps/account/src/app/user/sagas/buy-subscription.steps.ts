@@ -69,7 +69,7 @@ export class BuySubscriptionSagaStateWaitingForPayment extends BuySubscriptionSt
       this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
       return { user: this.saga.user, status: 'canceled' };
     }
-    if (status !== 'success') {
+    if (status === 'success') {
       this.saga.setState(PurchaseState.Canceled, this.saga.subscriptionId);
       return { user: this.saga.user, status: 'success' };
     }
