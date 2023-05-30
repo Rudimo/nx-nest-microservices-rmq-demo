@@ -2,7 +2,7 @@ import {
   PaymentCheck,
   PaymentGenerateLink,
   PaymentStatus,
-  SubcsriptionGetSubscription,
+  SubscriptionGetSubscription,
 } from '@nx-monorepo-project/contracts';
 import { UserEntity } from '../entities/user.entity';
 import { BuySubscriptionState } from './buy-subscription.state';
@@ -11,9 +11,9 @@ import { PurchaseState } from '@nx-monorepo-project/interfaces';
 export class BuySubscriptionSagaStateStarted extends BuySubscriptionState {
   public async pay(): Promise<{ paymentLink: string; user: UserEntity }> {
     const { subscription } = await this.saga.rmqService.send<
-      SubcsriptionGetSubscription.Request,
-      SubcsriptionGetSubscription.Response
-    >(SubcsriptionGetSubscription.topic, {
+      SubscriptionGetSubscription.Request,
+      SubscriptionGetSubscription.Response
+    >(SubscriptionGetSubscription.topic, {
       id: this.saga.subscriptionId,
     });
 
@@ -54,7 +54,10 @@ export class BuySubscriptionSagaStateWaitingForPayment extends BuySubscriptionSt
   public pay(): Promise<{ paymentLink: string; user: UserEntity }> {
     throw new Error('You are already in the process of paying.');
   }
-  public async checkPayment(): Promise<{ user: UserEntity; status: PaymentStatus }> {
+  public async checkPayment(): Promise<{
+    user: UserEntity;
+    status: PaymentStatus;
+  }> {
     const { status } = await this.saga.rmqService.send<
       PaymentCheck.Request,
       PaymentCheck.Response

@@ -49,9 +49,16 @@ export class UserEntity implements IUser {
     return this;
   }
 
+  public getSubscriptionState(subscriptionId: string): PurchaseState {
+    return (
+      this.subscriptions.find((s) => s.subscriptionId === subscriptionId)
+        ?.purchaseState ?? PurchaseState.Started
+    );
+  }
+
   public setSubscriptionStatus(subscriptionId: string, state: PurchaseState) {
     const exist = this.subscriptions.find(
-      (subscription) => subscription._id === subscriptionId
+      (subscription) => subscription.subscriptionId === subscriptionId
     );
     if (!exist) {
       this.subscriptions.push({
@@ -63,13 +70,13 @@ export class UserEntity implements IUser {
 
     if (state === PurchaseState.Canceled) {
       this.subscriptions = this.subscriptions.filter(
-        (subscription) => subscription._id !== subscriptionId
+        (subscription) => subscription.subscriptionId !== subscriptionId
       );
       return this;
     }
 
     this.subscriptions = this.subscriptions.map((subscription) => {
-      if (subscription._id === subscriptionId) {
+      if (subscription.subscriptionId === subscriptionId) {
         subscription.purchaseState = state;
         return subscription;
       }

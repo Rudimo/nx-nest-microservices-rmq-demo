@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-  AccountChangeProfile
-} from '@nx-monorepo-project/contracts';
-import { IUser } from '@nx-monorepo-project/interfaces';
+import { AccountChangeProfile } from '@nx-monorepo-project/contracts';
+import { IUser, PurchaseState } from '@nx-monorepo-project/interfaces';
 import { RMQService } from 'nestjs-rmq';
 import { UserEntity } from './entities/user.entity';
 import { UserRepository } from './repositories/user.repository';
@@ -55,6 +53,7 @@ export class UserService {
       subscriptionId,
       this.rmqService
     );
+
     const { user, paymentLink } = await saga.getState().pay();
 
     await this.updateUser(user);
